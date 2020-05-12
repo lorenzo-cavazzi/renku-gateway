@@ -81,7 +81,7 @@ You can run tests with
 
 ::
 
-    $ pipenv run pytest
+    $ pipenv run pytest --black
 
 Configuration
 -------------
