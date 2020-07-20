@@ -18,7 +18,7 @@ data:
       level = "debug"
     {{ else }}
     [log]
-      level = "error"
+      level = "debug"
     {{ end }}
 
     [api]
@@ -196,8 +196,8 @@ data:
           prefix = "/knowledge-graph"
 
         [http.middlewares.direct.ReplacePathRegex]
-          regex = "/api/direct/(.*)"
-          replacement = "/(.*)"
+          regex = "^/api/direct/(.*)"
+          replacement = "/$1"
 
         [http.middlewares.general-ratelimit.ratelimit]
           extractorfunc = "{{ .Values.rateLimits.general.extractorfunc }}"
