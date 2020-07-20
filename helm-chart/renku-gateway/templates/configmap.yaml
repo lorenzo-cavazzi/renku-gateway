@@ -152,6 +152,9 @@ data:
         [http.middlewares.development.headers]
           isDevelopment = true
 
+        [http.middlewares.direct.AddPrefix]
+          prefix = "{{ .Values.global.gitlab.urlPrefix }}"
+
         [http.middlewares.gitlab.AddPrefix]
           prefix = "{{ .Values.global.gitlab.urlPrefix }}/api/v4"
 
