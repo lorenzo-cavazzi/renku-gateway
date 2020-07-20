@@ -95,7 +95,7 @@ data:
 
         [http.routers.direct]
           entryPoints = ["http"]
-          Middlewares = ["auth-gitlab", "direct"]
+          Middlewares = ["auth-gitlab", "direct", "gitlabOnly"]
           Rule = "PathPrefix(`{{ .Values.gatewayServicePrefix | default "/api/" }}direct/`)"
           Service = "gitlab"
 
@@ -105,7 +105,7 @@ data:
           # possible value.
           priority = 1
           entryPoints = ["http"]
-          Middlewares = ["auth-gitlab", "common", "gitlab"]
+          Middlewares = ["auth-gitlab", "common", "gitlabApi", "gitlabOnly"]
           Rule = "PathPrefix(`{{ .Values.gatewayServicePrefix | default "/api/" }}`)"
           Service = "gitlab"
 
@@ -152,11 +152,17 @@ data:
         [http.middlewares.development.headers]
           isDevelopment = true
 
-        [http.middlewares.direct.AddPrefix]
+        # [http.middlewares.direct.AddPrefix]
+        #   prefix = "{{ .Values.global.gitlab.urlPrefix }}"
+
+        # [http.middlewares.gitlab.AddPrefix]
+        #   prefix = "{{ .Values.global.gitlab.urlPrefix }}/api/v4"
+
+        [http.middlewares.gitlabOnly.AddPrefix]
           prefix = "{{ .Values.global.gitlab.urlPrefix }}"
 
-        [http.middlewares.gitlab.AddPrefix]
-          prefix = "{{ .Values.global.gitlab.urlPrefix }}/api/v4"
+        [http.middlewares.gitlabApi.AddPrefix]
+          prefix = "/api/v4"
 
         [http.middlewares.jupyterhub.ReplacePathRegex]
           regex = "^/jupyterhub/(.*)"
