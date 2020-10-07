@@ -49,6 +49,18 @@ if VSCODE_DEBUG:
     ptvsd.wait_for_attach()
     breakpoint()
 
+# VSCODE_DEBUG = os.environ.get("VSCODE_DEBUG") == "1"
+# if VSCODE_DEBUG:
+#     import debugpy
+
+#     # 5678 is the default attach port in the VS Code debug configurations
+#     print("Waiting for debugger attach")
+#     # ptvsd.enable_attach(address=("localhost", 5678), redirect_output=True)
+#     # ptvsd.wait_for_attach()
+#     debugpy.listen(5678)
+#     debugpy.wait_for_client()
+#     breakpoint()
+
 
 if os.environ.get("SENTRY_DSN"):
     sentry_sdk.init(
@@ -145,12 +157,18 @@ def auth():
         # auth processors always assume a valid Authorization in header, if any
         headers = auth.process(request, headers)
     except jwt.ExpiredSignatureError:
-        current_app.logger.warning("Error while authenticating request", exc_info=True)
-        return Response(json.dumps({"error": "token_expired"}), status=401)
+        current_app.logger.warning(
+            "Error while authenticating request, token expired", exc_info=True
+        )
+        message = {"error": "token expired", "payload": request.args.get("auth")}
+        return Response(json.dumps(message), status=401)
     # TODO: fix bare except
     # https://github.com/SwissDataScienceCenter/renku-gateway/issues/232
     except:  # noqa
-        current_app.logger.warning("Error while authenticating request", exc_info=True)
+        current_app.logger.warning(
+            "Error while authenticating request, unknown", exc_info=True
+        )
+        message = {"error": "authentication error", "payload": request.args.get("auth")}
         return Response(json.dumps({"error": "Error while authenticating"}), status=401)
 
     return Response(json.dumps("Up and running"), headers=headers, status=200,)

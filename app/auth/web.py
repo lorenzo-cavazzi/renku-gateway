@@ -104,13 +104,13 @@ LOGIN_SEQUENCE = ["web_auth.login", "gitlab_auth.login", "jupyterhub_auth.login"
 
 @blueprint.route("/login/next")
 def login_next():
-    session["login_seq"] += 1
-    if session["login_seq"] < len(LOGIN_SEQUENCE):
+    session["login_current_seq"] += 1
+    if session["login_current_seq"] < len(session["login_sequence"]):
         return render_template(
             "redirect.html",
             redirect_url=urljoin(
                 current_app.config["HOST_NAME"],
-                url_for(LOGIN_SEQUENCE[session["login_seq"]]),
+                url_for(session["login_sequence"][session["login_current_seq"]]),
             ),
         )
     else:
@@ -123,7 +123,17 @@ def login():
     session.clear()
     session["ui_redirect_url"] = request.args.get("redirect_url")
     session["cli_token"] = request.args.get("cli_token")
-    session["login_seq"] = 0
+    session["login_current_seq"] = 0
+
+    # verify if the login should target a single service
+    target = request.args.get("target")
+    if target:
+        target_login = next(seq for seq in LOGIN_SEQUENCE if seq.startswith(target))
+        if not target_login:
+            raise ValueError(f"The target service is not available for login: {target}")
+        session["login_sequence"] = [target_login]
+    else:
+        session["login_sequence"] = LOGIN_SEQUENCE
 
     provider_app = KeycloakProviderApp(
         client_id=current_app.config["OIDC_CLIENT_ID"],
