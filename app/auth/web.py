@@ -291,4 +291,11 @@ def logout():
     session.clear()
     session["logout_from"] = "Renku"
 
-    return current_app.make_response(redirect(logout_url))
+    # return current_app.make_response(redirect(logout_url))
+    from datetime import timedelta
+    current_app.permanent_session_lifetime = timedelta(seconds=1)
+    current_app.store.delete(f"sessions_{session.sid_s}")
+    resp = current_app.make_response(redirect(logout_url))
+    # resp.set_cookie("session", "", expires=0)
+    resp.delete_cookie("session")
+    return resp
